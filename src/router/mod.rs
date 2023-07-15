@@ -11,7 +11,23 @@ pub fn handle_request(request: &str) -> Option<Result<String, String>> {
 
 fn handle_get_request(path: &str) -> Result<String, String> {
     match path {
-        "/hello" => Ok("Hello, world!".to_string()),
+        "/ping" => Ok("pong".to_string()),
         _ => Err("Not found".to_string()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_handle_get_request() {
+        let result = handle_get_request("/ping");
+        assert_eq!(result.unwrap(), "pong");
+    }
+
+    #[test]
+    fn test_bad_handle_get_request() {
+        assert_eq!(handle_get_request("/bad").is_err(), true);
     }
 }
