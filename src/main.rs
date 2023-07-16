@@ -2,6 +2,7 @@ mod router;
 mod response;
 mod request;
 mod config;
+mod email;
 
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
@@ -19,9 +20,9 @@ fn main() {
 
 fn handle_client(mut stream: TcpStream) {
     let mut buffer = [0; 512];
-    stream.read(&mut buffer).unwrap();
+    let bytes_read = stream.read(&mut buffer).unwrap();
 
-    let http_response = request::process(buffer);
+    let http_response = request::process(buffer, bytes_read);
 
     stream.write(http_response.as_bytes()).unwrap();
     stream.flush().unwrap();

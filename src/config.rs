@@ -7,6 +7,9 @@ pub fn listen_on_port() -> u16 {
     }
 }
 
+pub fn smtp_user() -> String { env::var("SMTP_USER").expect("SMTP_USER is not set") }
+pub fn smtp_pass() -> String { env::var("SMTP_PASS").expect("SMTP_PASS is not set") }
+
 #[cfg(test)]
 mod tests {
     use super::*;

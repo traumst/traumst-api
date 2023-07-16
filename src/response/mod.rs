@@ -4,7 +4,7 @@ pub struct Response {
     pub body: String,
 }
 
-pub fn generate_for(routing_result: Option<Result<String, String>>) -> String {
+pub fn generate_for(routing_result: Result<String, String>) -> String {
     let response = generate_response(routing_result);
     format!(
         "HTTP/1.1 {} {}\r\n\r\n{}",
@@ -13,24 +13,24 @@ pub fn generate_for(routing_result: Option<Result<String, String>>) -> String {
         response.body)
 }
 
-fn generate_response(routing_result: Option<Result<String, String>>) -> Response {
+fn generate_response(routing_result: Result<String, String>) -> Response {
     match routing_result {
-        Some(Ok(body)) => Response {
+        Ok(body) => Response {
             status_code: "200",
             status_message: "OK",
             body
         },
-        Some(Err(error)) => generate_error(error),
-        None => Response {
-            status_code: "400",
-            status_message: "Bad Request",
-            body: String::new(),
-        },
+        Err(error) => generate_error(error),
     }
 }
 
 fn generate_error(error: String) -> Response {
     match error.as_str() {
+        "Bad request" => Response {
+            status_code: "400",
+            status_message: "Bad Request",
+            body: error
+        },
         "Not found" => Response {
             status_code: "404",
             status_message: "Not Found",
