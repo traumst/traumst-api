@@ -21,9 +21,10 @@ pub fn parse_request(json: &str) -> Result<EmailRequest, String> {
 pub fn send_email(json: EmailRequest) -> Result<String, String> {
     let user = config::smtp_user();
     let sender = format!("Email Contact Form <{user}>");
+    let receiver = config::email_receiver();
     let email = Message::builder()
         .from(sender.parse().unwrap())
-        .to(user.parse().unwrap())
+        .to(receiver.parse().unwrap())
         .subject(format!("{} by <{}>", json.topic, json.sender))
         .body(json.body.to_string())
         .unwrap();
