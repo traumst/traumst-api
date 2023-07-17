@@ -36,9 +36,14 @@ fn generate_error(error: String) -> Response {
             status_message: "Not Found",
             body: error
         },
+        "Gateway Timeout" => Response {
+            status_code: "504",
+            status_message: "Gateway Timeout",
+            body: error
+        },
         _ => Response {
-            status_code: "501",
-            status_message: "Not Implemented",
+            status_code: "500",
+            status_message: "Internal Server Error",
             body: error,
         },
     }

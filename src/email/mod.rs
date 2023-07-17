@@ -14,19 +14,22 @@ pub struct EmailRequest {
 pub fn parse_request(json: &str) -> Result<EmailRequest, String> {
     match serde_json::from_str(json) {
         Ok(email) => { Ok(email) },
-        _ => { Err("Incorrect json".to_string()) }
+        Err(e) => { Err(format!("Bad request, Incorrect json: {e:?}")) }
     }
 }
 
 pub fn send_email(json: EmailRequest) -> Result<String, String> {
+    let user = config::smtp_user();
+    let sender = format!("Email Contact Form <{user}>");
     let email = Message::builder()
-        .from(json.sender.parse().unwrap())
-        .to("dutraumst@gmail.com".parse().unwrap())
-        .subject(json.topic)
+        .from(sender.parse().unwrap())
+        .to(user.parse().unwrap())
+        .subject(format!("{} by <{}>", json.topic, json.sender))
         .body(json.body.to_string())
         .unwrap();
 
-    let creds = Credentials::new(config::smtp_user(), config::smtp_pass());
+    let pass = config::smtp_pass();
+    let creds = Credentials::new(user, pass);
 
     let mailer = SmtpTransport::relay("smtp.gmail.com")
         .expect("SMTP did not connect")
@@ -35,7 +38,7 @@ pub fn send_email(json: EmailRequest) -> Result<String, String> {
 
     match mailer.send(&email) {
         Ok(_) => Ok("Email sent successfully!".to_string()),
-        Err(e) => Err(format!("Could not send email: {e:?}"))
+        _ => Err(format!("Gateway Timeout"))
     }
 }
 
