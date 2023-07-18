@@ -11,7 +11,8 @@ fn main() {
     let host = "127.0.0.1";
     let port = config::listen_on_port();
     let listen_on = format!("{}:{}", host, port);
-    let listener = TcpListener::bind(listen_on).unwrap();
+    let listener = TcpListener::bind(listen_on.clone()).unwrap();
+    println!("server is listening on {listen_on:?}");
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         handle_client(stream);

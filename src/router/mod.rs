@@ -6,8 +6,16 @@ pub fn handle_request(request: &str) -> Result<String, String> {
     let path = parts[1];
 
     match method {
+        "OPTIONS" => handle_options_request(path),
         "GET" => handle_get_request(path),
         "POST" => handle_post_request(path, request),
+        _ => Err("Not found".to_string()),
+    }
+}
+
+fn handle_options_request(path: &str) -> Result<String, String> {
+    match path {
+        "/email" => handler::send_options(),
         _ => Err("Not found".to_string()),
     }
 }
