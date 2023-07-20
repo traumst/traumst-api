@@ -22,7 +22,7 @@ fn main() {
 }
 
 fn handle_client(mut stream: TcpStream) {
-    let mut buffer = [0; 512];
+    let mut buffer = [0; 2048];
     let bytes_read = stream.read(&mut buffer).unwrap();
     let http_request = std::str::from_utf8(&buffer[..bytes_read])
         .expect("Failed to read input into string");

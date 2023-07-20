@@ -11,19 +11,22 @@ pub fn send_pong() -> Result<Response, String> {
     })
 }
 
+const ACCESS_CONTROL_HEADERS: &str = r#"Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: POST, GET, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Content-Length"#;
+
 pub fn send_options() -> Result<Response, String> {
     println!("sending options...");
     Ok(Response {
         status_code: "204",
         status_message: "No Content",
-        headers: r#"Access-Control-Allow-Origin: *
-Access-Control-Allow-Methods: POST, GET, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Content-Length"#.to_string(),
+        headers: ACCESS_CONTROL_HEADERS.to_string(),
         body: "".to_string(),
     })
 }
 
 pub fn send_email(request: &str) -> Result<Response, String> {
+    println!("processing email request: {request}");
     let mut headers_body = request.split("\r\n\r\n");
     let _headers = headers_body.next().expect("No headers were sent with request");
     match headers_body.next() {
@@ -33,10 +36,10 @@ pub fn send_email(request: &str) -> Result<Response, String> {
                 Ok(json) => {
                     email::send_email(json).expect("Failed to send an email");
                     Ok(Response {
-                        status_code: "204",
-                        status_message: "No Content",
-                        headers: "".to_string(),
-                        body: "Done".to_string(),
+                        status_code: "200",
+                        status_message: "OK",
+                        headers: ACCESS_CONTROL_HEADERS.to_string(),
+                        body: "Email Sent".to_string(),
                     })
                 }
                 Err(msg) => { Err(msg) }
