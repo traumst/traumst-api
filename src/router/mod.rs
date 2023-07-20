@@ -1,6 +1,8 @@
+use crate::response::Response;
+
 mod handler;
 
-pub fn handle_request(request: &str) -> Result<String, String> {
+pub fn handle_request(request: &str) -> Result<Response, String> {
     let parts: Vec<&str> = request.split_whitespace().collect();
     let method = parts[0];
     let path = parts[1];
@@ -13,21 +15,21 @@ pub fn handle_request(request: &str) -> Result<String, String> {
     }
 }
 
-fn handle_options_request(path: &str) -> Result<String, String> {
+fn handle_options_request(path: &str) -> Result<Response, String> {
     match path {
         "/email" => handler::send_options(),
         _ => Err("Not found".to_string()),
     }
 }
 
-fn handle_get_request(path: &str) -> Result<String, String> {
+fn handle_get_request(path: &str) -> Result<Response, String> {
     match path {
-        "/ping" => Ok("pong".to_string()),
+        "/ping" => handler::send_pong(),
         _ => Err("Not found".to_string()),
     }
 }
 
-fn handle_post_request(path: &str, request: &str) -> Result<String, String> {
+fn handle_post_request(path: &str, request: &str) -> Result<Response, String> {
     match path {
         "/email" => handler::send_email(request),
         _ => Err("Not found".to_string()),
@@ -40,8 +42,8 @@ mod tests {
 
     #[test]
     fn test_handle_get_request() {
-        let result = handle_get_request("/ping");
-        assert_eq!(result.unwrap(), "pong");
+        let result = handle_get_request("/ping").unwrap();
+        assert_eq!(result.body, "pong");
     }
 
     #[test]

@@ -11,10 +11,12 @@ fn main() {
     let host = "127.0.0.1";
     let port = config::listen_on_port();
     let listen_on = format!("{}:{}", host, port);
-    let listener = TcpListener::bind(listen_on.clone()).unwrap();
+    let listener = TcpListener::bind(listen_on.clone())
+        .expect("Listener fail to bind");
     println!("server is listening on {listen_on:?}");
     for stream in listener.incoming() {
-        let stream = stream.unwrap();
+        let stream = stream
+            .expect("Could not read incoming stream");
         handle_client(stream);
     }
 }
@@ -22,8 +24,10 @@ fn main() {
 fn handle_client(mut stream: TcpStream) {
     let mut buffer = [0; 512];
     let bytes_read = stream.read(&mut buffer).unwrap();
+    let http_request = std::str::from_utf8(&buffer[..bytes_read])
+        .expect("Failed to read input into string");
 
-    let http_response = request::process(buffer, bytes_read);
+    let http_response = request::process(http_request);
 
     stream.write(http_response.as_bytes()).unwrap();
     stream.flush().unwrap();
