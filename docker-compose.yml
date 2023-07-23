@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  traumst-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: traumst-api:v1
+    ports:
+      - "7654:7654"
+    environment:
+      - LISTEN_PORT=7654
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_USER=${SMTP_USER}
+      - EMAIL_RECEIVER=${EMAIL_RECEIVER}

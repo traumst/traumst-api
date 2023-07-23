@@ -22,6 +22,7 @@ pub fn send_email(json: EmailRequest) -> Result<String, String> {
     let user = config::smtp_user();
     let sender = format!("Email Contact Form <{user}>");
     let receiver = config::email_receiver();
+    println!("sending email from {sender} to {receiver}");
     let email = Message::builder()
         .from(sender.parse().unwrap())
         .to(receiver.parse().unwrap())
@@ -38,8 +39,8 @@ pub fn send_email(json: EmailRequest) -> Result<String, String> {
         .build();
 
     match mailer.send(&email) {
-        Ok(_) => Ok("Email sent successfully!".to_string()),
-        _ => Err(format!("Gateway Timeout"))
+        Ok(res) => Ok(format!("Email sent successfully! {res:?}")),
+        Err(err) => Err(format!("Failed to send an email, {err:?}"))
     }
 }
 

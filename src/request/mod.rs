@@ -4,9 +4,14 @@ use crate::response::Response;
 pub fn process(http_request: &str) -> String {
     let routing_result = router::handle_request(http_request);
     let result = translate(routing_result);
-    println!("sending response {result}");
 
     result
+}
+
+pub fn error(body: String) -> String {
+    let result = generate_error(body);
+
+    response::generate_for(result)
 }
 
 fn translate(routing_result: Result<Response, String>) -> String {

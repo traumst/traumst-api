@@ -8,16 +8,17 @@ use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 
 fn main() {
-    let host = "127.0.0.1";
+    let host = "0.0.0.0";
     let port = config::listen_on_port();
     let listen_on = format!("{}:{}", host, port);
     let listener = TcpListener::bind(listen_on.clone())
         .expect("Listener fail to bind");
     println!("server is listening on {listen_on:?}");
     for stream in listener.incoming() {
-        let stream = stream
-            .expect("Could not read incoming stream");
-        handle_client(stream);
+        match stream {
+            Ok(stream) => { handle_client(stream); }
+            Err(err) => { println!("Failed while consuming incoming stream: {err:?}") }
+        }
     }
 }
 
