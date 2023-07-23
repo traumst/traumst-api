@@ -37,4 +37,13 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/traumst-api:latest
             docker stop traumst-api-container || true
             docker rm traumst-api-container || true
-            docker run -d -p 7654:7654 -v ~/.env:/app/.env --name traumst-api-container --restart always ${{ secrets.DOCKER_USERNAME }}/traumst-api:latest
+            set -a; source ~/.env; set +a
+            docker run -d -p 7654:7654 \
+            -e LISTEN_PORT \
+            -e SMTP_PASS \
+            -e SMTP_USER \
+            -e EMAIL_RECEIVER \
+            -v ~/.env:/app/.env \
+            --name traumst-api-container \
+            --restart always \
+            ${{ secrets.DOCKER_USERNAME }}/traumst-api:latest
