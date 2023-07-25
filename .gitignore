@@ -12,5 +12,6 @@ Cargo.lock
 
 # Custom
 .idea/
+.ssl
 .env
 .DS_Store
