@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: api
     image: traumst-api:v1
     ports:
       - "${LISTEN_PORT}:${LISTEN_PORT}"
@@ -14,8 +15,12 @@ services:
       - SMTP_USER=${SMTP_USER}
       - EMAIL_RECEIVER=${EMAIL_RECEIVER}
 
-  nginx:
-    image: nginx:latest
+  traumst-website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: website
+    image: traumst-website:v1
     ports:
       - "80:80"
       - "443:443"

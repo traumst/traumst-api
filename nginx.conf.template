@@ -10,15 +10,29 @@ server {
 
 server {
     listen 443 ssl;
-    server_name alextech.com;
+    server_name alextech.pro;
 
     ssl_certificate /etc/nginx/ssl/alextech_pro.crt;
     ssl_certificate_key /etc/nginx/ssl/alextech_pro.key;
 
-    location / {
+    client_max_body_size 8k;
+
+   location /email {
         proxy_pass http://traumst-api:${LISTEN_PORT};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /ping {
+        proxy_pass http://traumst-api:${LISTEN_PORT};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Serve all other requests from the static website
+    location / {
+        root /usr/share/nginx/html;
     }
 }
