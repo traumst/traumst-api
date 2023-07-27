@@ -32,22 +32,10 @@ jobs:
   deploy:
     runs-on: [ self-hosted, linux ]
     needs: build_and_push
-    env:
-      LISTEN_PORT: ${{ secrets.LISTEN_PORT }}
-      SMTP_PASS: ${{ secrets.SMTP_PASS }}
-      SMTP_USER: ${{ secrets.SMTP_USER }}
-      EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Debug print environment variables
-        run: |
-          echo "LISTEN_PORT=$LISTEN_PORT"
-          # Don't print SMTP_PASS for security reasons
-          echo "SMTP_USER=$SMTP_USER"
-          echo "EMAIL_RECEIVER=$EMAIL_RECEIVER"
 
       - name: Substitute environment variables in nginx configuration
         run: |
@@ -56,3 +44,8 @@ jobs:
       - name: Deploy with docker-compose
         run: |
           docker-compose up --build -d
+        env:
+          LISTEN_PORT: ${{ secrets.LISTEN_PORT }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
