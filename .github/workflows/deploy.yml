@@ -43,6 +43,7 @@ jobs:
 
       - name: Deploy with docker-compose
         run: |
+          export LISTEN_PORT=${{ secrets.LISTEN_PORT }}
           docker-compose up --build -d
         env:
           LISTEN_PORT: ${{ secrets.LISTEN_PORT }}
