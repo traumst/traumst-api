@@ -43,7 +43,13 @@ jobs:
 
       - name: Deploy with docker-compose
         run: |
+          docker-compose down
+          export LISTEN_PORT=${{ secrets.LISTEN_PORT }}
+          export SMTP_PASS=${{ secrets.SMTP_PASS }}
+          export SMTP_USER=${{ secrets.SMTP_USER }}
+          export EMAIL_RECEIVER=${{ secrets.EMAIL_RECEIVER }}
           docker-compose up --build -d
+          docker system prune
         env:
           LISTEN_PORT: ${{ secrets.LISTEN_PORT }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
