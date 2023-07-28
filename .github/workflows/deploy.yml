@@ -48,8 +48,8 @@ jobs:
         run: |
           rm -rf .ssl
           mkdir -p .ssl
-          echo "${{ secrets.SSL_CERTIFICATE }}" > .ssl/alextech_pro.crt
-          echo "${{ secrets.SSL_PRIVATE_KEY }}" > .ssl/alextech_pro.key
+          echo "${{ secrets.SSL_CRT }}" > .ssl/alextech_pro.crt
+          echo "${{ secrets.SSL_KEY }}" > .ssl/alextech_pro.key
 
       - name: Deploy with docker-compose
         run: |

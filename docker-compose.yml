@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   traumst-api:
+    container_name: api
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,7 +16,8 @@ services:
       - SMTP_USER=${SMTP_USER}
       - EMAIL_RECEIVER=${EMAIL_RECEIVER}
 
-  traumst-website:
+  traumst-web:
+    container_name: web
     build:
       context: .
       dockerfile: Dockerfile
