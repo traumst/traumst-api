@@ -44,6 +44,13 @@ jobs:
         run: |
           envsubst '${LISTEN_PORT}' < nginx.conf.template > nginx.conf
 
+      - name: Create SSL certificate and private key
+        run: |
+          rm -rf .ssl
+          mkdir -p .ssl
+          echo "${{ secrets.SSL_CERTIFICATE }}" > .ssl/alextech_pro.crt
+          echo "${{ secrets.SSL_PRIVATE_KEY }}" > .ssl/alextech_pro.key
+
       - name: Deploy with docker-compose
         run: |
           docker-compose down
