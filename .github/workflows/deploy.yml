@@ -30,7 +30,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/traumst-website:v1
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux ]
     needs: build_and_push
     env:
       LISTEN_PORT: ${{ secrets.LISTEN_PORT }}
@@ -53,6 +53,6 @@ jobs:
           export SMTP_PASS=${{ secrets.SMTP_PASS }}
           export SMTP_USER=${{ secrets.SMTP_USER }}
           export EMAIL_RECEIVER=${{ secrets.EMAIL_RECEIVER }}
-          docker-compose up --build -d traumst-api
-          docker-compose up --build -d traumst-website
+          docker-compose up --build -d traumst-api || exit 123
+          docker-compose up --build -d traumst-website || exit 321
           docker system prune
