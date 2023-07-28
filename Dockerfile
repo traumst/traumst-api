@@ -20,6 +20,5 @@ WORKDIR /app
 RUN git clone https://github.com/traumst/traumst.github.io
 
 # setup nginx to serve website
-FROM nginx:latest as website
+FROM nginx:latest as web
 COPY --from=clone /app/traumst.github.io /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
