@@ -1,9 +1,7 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build_and_push:
@@ -53,5 +51,6 @@ jobs:
           export SMTP_PASS=${{ secrets.SMTP_PASS }}
           export SMTP_USER=${{ secrets.SMTP_USER }}
           export EMAIL_RECEIVER=${{ secrets.EMAIL_RECEIVER }}
-          docker-compose up --build -d || exit 111
+          docker-compose up --build -d traumst-api || exit 111
+          docker-compose up --build -d traumst-website || exit 111
           docker system prune
