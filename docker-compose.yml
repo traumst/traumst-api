@@ -21,8 +21,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: website
-    image: traumst-website:v1
+      target: web
+    image: traumst-web:v1
     ports:
       - "80:80"
       - "443:443"
