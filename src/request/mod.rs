@@ -1,17 +1,25 @@
+use std::io::{Read, Write};
+use std::net::TcpStream;
 use crate::{response, router};
 use crate::response::Response;
 
-pub fn process(http_request: &str) -> String {
+pub fn handle_client(mut stream: TcpStream) {
+    let mut buffer = [0; 2048];
+    let bytes_read = stream.read(&mut buffer).unwrap();
+    let http_request = std::str::from_utf8(&buffer[..bytes_read])
+        .expect("Failed to read input into string");
+
+    let http_response = process(http_request);
+
+    stream.write(http_response.as_bytes()).unwrap();
+    stream.flush().unwrap();
+}
+
+fn process(http_request: &str) -> String {
     let routing_result = router::handle_request(http_request);
     let result = translate(routing_result);
 
     result
-}
-
-pub fn error(body: String) -> String {
-    let result = generate_error(body);
-
-    response::generate_for(result)
 }
 
 fn translate(routing_result: Result<Response, String>) -> String {

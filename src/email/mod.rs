@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
+use log::debug;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EmailRequest {
@@ -22,7 +23,7 @@ pub fn send_email(json: EmailRequest) -> Result<String, String> {
     let user = config::smtp_user();
     let sender = format!("Email Contact Form <{user}>");
     let receiver = config::email_receiver();
-    println!("sending email from {sender} to {receiver}");
+    debug!("sending email from {sender} to {receiver}");
     let email = Message::builder()
         .from(sender.parse().unwrap())
         .to(receiver.parse().unwrap())
