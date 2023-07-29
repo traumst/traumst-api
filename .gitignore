@@ -16,3 +16,4 @@ Cargo.lock
 .env
 .DS_Store
 nginx.conf
+github-runner.service
