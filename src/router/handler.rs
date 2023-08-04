@@ -2,9 +2,10 @@ use crate::email;
 use crate::response::Response;
 
 pub fn send_pong() -> Result<Response, String> {
+
     Ok(Response {
-        status_code: "204",
-        status_message: "204",
+        status_code: "200",
+        status_message: "200",
         headers: "".to_string(),
         body: "pong".to_string(),
     })
