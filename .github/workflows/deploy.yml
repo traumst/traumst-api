@@ -1,4 +1,4 @@
-name: Deploy
+name: build and deploy
 
 on:
   workflow_dispatch:
@@ -65,7 +65,7 @@ jobs:
       - name: Pull and Deploy traumst-web
         run: |
           docker-compose pull traumst-web
-          docker-compose up -d traumst-web || exit 111
+          docker-compose up -d traumst-web || exit 222
 
       - name: Cleanup
         run: docker system prune -a -f
