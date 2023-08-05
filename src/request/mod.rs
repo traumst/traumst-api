@@ -1,18 +1,26 @@
-use std::io::{Read, Write};
-use std::net::TcpStream;
+use log::{error, trace};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 use crate::{response, router};
 use crate::response::Response;
 
-pub fn handle_client(mut stream: TcpStream) {
+pub async fn handle_client(mut stream: TcpStream) {
     let mut buffer = [0; 2048];
-    let bytes_read = stream.read(&mut buffer).unwrap();
-    let http_request = std::str::from_utf8(&buffer[..bytes_read])
-        .expect("Failed to read input into string");
+    match stream.read(&mut buffer).await {
+        Ok(bytes_read) => match std::str::from_utf8(&buffer[..bytes_read]) {
+            Ok(http_request) => write_output(stream, http_request).await,
+            Err(e) => error!("Failed to read input into string: {e:?}"),
+        }
+        Err(e) => error!("Failed to read input stream {e:?}"),
+    }
+}
 
-    let http_response = process(http_request);
-
-    stream.write(http_response.as_bytes()).unwrap();
-    stream.flush().unwrap();
+async fn write_output(mut stream: TcpStream, http_request: &str) {
+    let result = process(http_request);
+    match stream.write_all(result.as_bytes()).await {
+        Ok(_) => trace!("Response output written"),
+        Err(e) => error!("Failed to write response output {e:?}"),
+    }
 }
 
 fn process(http_request: &str) -> String {

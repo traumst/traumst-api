@@ -7,56 +7,45 @@ mod config;
 mod email;
 mod infra;
 
-use std::io::ErrorKind;
-use std::net::TcpListener;
-use std::sync::Arc;
-use std::thread;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
+use std::error;
 use log::{debug, error, info, trace, warn};
+use tokio::net::TcpListener;
+use tokio::signal;
 
-const MIN_TIMEOUT: u64 = 250;
-const MAX_TIMEOUT: u64 = 3500;
-
-fn main() {
-    let shutdown_signal = setup();
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn error::Error>> {
+    setup();
 
     let host = "0.0.0.0";
     let port = config::listen_on_port();
     let listen_on = format!("{}:{}", host, port);
     let listener = TcpListener::bind(listen_on.clone())
+        .await
         .expect("Listener fail to bind");
-    info!("server is listening on {listen_on:?}");
+    info!("Server is listening on {listen_on:?}");
 
-    listener.set_nonblocking(true).expect("Cannot set non-blocking on TcpListener");
-    debug!("  listener set to non-blocking");
-
-    let mut timeout = MIN_TIMEOUT;
-    for stream in listener
-        .incoming()
-        .take_while(|_| !is_shutdown_requested(shutdown_signal.clone())){
-        match stream {
-            Ok(stream) => {
-                trace!("  processing incoming request");
-                request::handle_client(stream);
-            }
-            Err(ref e) if e.kind() == ErrorKind::WouldBlock => {
-                if timeout < MAX_TIMEOUT { timeout *= 2; }
-                trace!("  no incoming requests, sleeping {} millis", timeout);
-                thread::sleep(Duration::from_millis(timeout.clone()));
-            }
-            Err(err) => {
-                error!("TcpListener probably degraded, error: {err:?}");
-                timeout = MAX_TIMEOUT;
+    tokio::spawn(async move {
+        loop {
+            match listener.accept().await {
+                Ok((stream, _)) => {
+                    debug!("  processing incoming request");
+                    request::handle_client(stream).await
+                }
+                Err(err) => error!("failed to read from socket; err: {err:?}"),
             }
         }
+    });
+
+    match signal::ctrl_c().await {
+        Ok(()) => warn!("Shutdown signal received"),
+        Err(err) => error!("Unable to listen for shutdown signal: {err:?}")
     }
-    warn!("Listener disconnected from {listen_on:?}")
+
+    Ok(warn!("Listener disconnected from {listen_on:?}"))
 }
 
-fn setup() -> Arc<AtomicBool> {
-    init_logger();
-    setup_shutdown_handler()
+fn setup() {
+    init_logger()
 }
 
 fn init_logger() {
@@ -66,18 +55,4 @@ fn init_logger() {
     info!("INFO log enabled");
     debug!("DEBUG log enabled");
     trace!("TRACE log enabled");
-}
-
-fn setup_shutdown_handler() -> Arc<AtomicBool> {
-    let shutdown = Arc::new(AtomicBool::new(false));
-    let server_shutdown = shutdown.clone();
-    ctrlc::set_handler(move || {
-        error!("Shutdown signal received");
-        server_shutdown.store(true, Ordering::Relaxed);
-    }).expect("error setting Ctrl-C handler");
-    shutdown
-}
-
-fn is_shutdown_requested(shutdown_requested: Arc<AtomicBool>) -> bool {
-    shutdown_requested.load(Ordering::Relaxed)
 }
