@@ -6,15 +6,17 @@ mod request;
 mod config;
 mod email;
 mod infra;
+mod database;
 
 use std::error;
 use log::{debug, error, info, trace, warn};
+use sqlx::{Pool, Sqlite};
 use tokio::net::TcpListener;
 use tokio::signal;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {
-    setup();
+    let mut db_pool = setup();
 
     let host = "0.0.0.0";
     let port = config::listen_on_port();
@@ -44,8 +46,9 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     Ok(warn!("Listener disconnected from {listen_on:?}"))
 }
 
-fn setup() {
-    init_logger()
+async fn setup() -> Pool<Sqlite> {
+    init_logger();
+    database::create().await
 }
 
 fn init_logger() {

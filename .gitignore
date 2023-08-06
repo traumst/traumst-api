@@ -12,7 +12,8 @@ Cargo.lock
 
 # Custom
 .idea/
-.ssl
+.ssl/
+db/
 .env
 .DS_Store
 nginx.conf
