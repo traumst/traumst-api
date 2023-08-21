@@ -1,5 +1,9 @@
 version: '3.8'
 
+volumes:
+  traumst-vol:
+    driver: local
+
 services:
   traumst-api:
     container_name: api
@@ -7,7 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: api
-    image: traumst-api:v2
+    image: traumst-api:v3
     ports:
       - "${LISTEN_PORT}:${LISTEN_PORT}"
     environment:
@@ -15,6 +19,10 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_USER=${SMTP_USER}
       - EMAIL_RECEIVER=${EMAIL_RECEIVER}
+      - DB_CONN=${DB_CONN}
+      - DB_CONN_POOL=${DB_CONN_POOL}
+    volumes:
+      - traumst-vol:/data
 
   traumst-web:
     container_name: web
@@ -22,7 +30,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
-    image: traumst-web:v2
+    image: traumst-web:v3
     ports:
       - "80:80"
       - "443:443"
