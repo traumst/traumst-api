@@ -7,6 +7,14 @@ pub fn listen_on_port() -> u16 {
     }
 }
 
+pub fn db_conn_str() -> String { env::var("DB_CONN").expect("DB_CONN is not set") }
+pub fn db_conn_pool() -> u32 {
+    match env::var("DB_CONN_POOL") {
+        Ok(val) => val.parse().expect("Invalid LISTEN_PORT in env"),
+        Err(_e) => panic!("LISTEN_PORT was not specified in env")
+    }
+}
+
 pub fn smtp_user() -> String { env::var("SMTP_USER").expect("SMTP_USER is not set") }
 pub fn smtp_pass() -> String { env::var("SMTP_PASS").expect("SMTP_PASS is not set") }
 pub fn email_receiver() -> String { env::var("EMAIL_RECEIVER").expect("EMAIL_RECEIVER is not set") }
