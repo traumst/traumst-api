@@ -1,8 +1,17 @@
+use std::fmt;
+
+#[derive(Debug, Clone)]
 pub struct Response {
-    pub status_code: &'static str,
-    pub status_message: &'static str,
+    pub status_code: String,
+    pub status_message: String,
     pub headers: String,
     pub body: String,
+}
+
+impl fmt::Display for Response {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid first item to double")
+    }
 }
 
 pub fn generate_for(response: Response) -> String {
@@ -14,31 +23,31 @@ pub fn generate_for(response: Response) -> String {
         response.body)
 }
 
-pub fn error(err: String) -> Response {
-    match err.as_str() {
-        "Bad request" => Response {
-            status_code: "400",
-            status_message: "Bad Request",
+pub fn error(err: &str, body: String) -> Response {
+    match err {
+        "Bad Request" => Response {
+            status_code: "400".to_string(),
+            status_message: "Bad Request".to_string(),
             headers: "".to_string(),
-            body: err
+            body
         },
-        "Not found" => Response {
-            status_code: "404",
-            status_message: "Not Found",
+        "Not Found" => Response {
+            status_code: "404".to_string(),
+            status_message: "Not Found".to_string(),
             headers: "".to_string(),
-            body: err
+            body
         },
         "Gateway Timeout" => Response {
-            status_code: "504",
-            status_message: "Gateway Timeout",
+            status_code: "504".to_string(),
+            status_message: "Gateway Timeout".to_string(),
             headers: "".to_string(),
-            body: err
+            body
         },
         _ => Response {
-            status_code: "500",
-            status_message: "Internal Server Error",
+            status_code: "500".to_string(),
+            status_message: "Internal Server Error".to_string(),
             headers: "".to_string(),
-            body: err,
+            body,
         },
     }
 }

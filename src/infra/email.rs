@@ -15,7 +15,7 @@ pub struct EmailRequest {
 pub fn parse_request(json: &str) -> Result<EmailRequest, String> {
     match serde_json::from_str(json) {
         Ok(email) => { Ok(email) },
-        Err(e) => { Err(format!("Bad request, Incorrect json: {e:?}")) }
+        Err(e) => { Err(format!("Bad input json: {e:?}")) }
     }
 }
 

@@ -1,24 +1,14 @@
 use std::sync::Arc;
 use log::{error, trace};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
-use crate::db::pool::Bridge;
 use crate::server::response;
 use crate::server::router;
-use crate::server::router::routes;
+use crate::db;
 
-pub async fn handle_input(mut stream: TcpStream, shared_pool: Arc<Bridge>) {
-    let mut buffer = [0; 2048];
-    match stream.read(&mut buffer).await {
-        Ok(bytes_read) => match std::str::from_utf8(&buffer[..bytes_read]) {
-            Ok(http_request) => process(stream, http_request, shared_pool).await,
-            Err(e) => error!("Failed to read input into string: {e:?}"),
-        }
-        Err(e) => error!("Failed to read input stream {e:?}"),
-    }
-}
+use super::routes;
 
-async fn process(mut stream: TcpStream, http_request: &str, shared_pool: Arc<Bridge>) {
+pub async fn process(mut stream: TcpStream, http_request: &str, shared_pool: Arc<db::pool::Bridge>) {
     let routed = route(http_request, shared_pool).await;
     let result = translate(routed);
     match stream.write_all(result.as_bytes()).await {
@@ -27,35 +17,41 @@ async fn process(mut stream: TcpStream, http_request: &str, shared_pool: Arc<Bri
     }
 }
 
-async fn route(http_request: &str, shared_pool: Arc<Bridge>) -> Result<response::Response, String> {
-    match router::handle_request(http_request).await {
+async fn route(http_request: &str, shared_pool: Arc<db::pool::Bridge>) -> Result<response::Response, response::Response> {
+    let res = routes::handle_request(http_request).await;
+    match res {
         router::RoutingResult::User(head, body, user_id) => {
             if user_id == 0 {
-                routes::create_user(head, body, shared_pool).await
+                routes::create_user(head.as_str(), body.as_str(), shared_pool).await
             } else {
-                routes::get_user(head, user_id, shared_pool).await
+                routes::get_user(head.as_str(), user_id, shared_pool).await
             }
         }
         router::RoutingResult::Email(head, body) => {
-            routes::send_email(head, body)
+            routes::send_email(head.as_str(), body.as_str())
         }
         router::RoutingResult::Options(head) => Ok(response::Response {
-            status_code: "204",
-            status_message: "No Content",
+            status_code: "204".to_string(),
+            status_message: "No Content".to_string(),
             headers: head.to_string(),
             body: "".to_string(),
         }),
         router::RoutingResult::Pong(head, body) => Ok(response::Response {
-            status_code: "200",
-            status_message: "Ok",
+            status_code: "200".to_string(),
+            status_message: "Ok".to_string(),
             headers: head.to_string(),
             body: body.to_string(),
         }),
-        router::RoutingResult::Err(path) => Err(format!("Routing failed to {path}"))
+        router::RoutingResult::Err(code, status, body) => Err(response::Response {
+            status_code: code,
+            status_message: status,
+            headers: "".to_string(),
+            body: body.to_string(),
+        })
     }
 }
 
-fn translate(routing_result: Result<response::Response, String>) -> String {
+fn translate(routing_result: Result<response::Response, response::Response>) -> String {
     let result = match routing_result {
         Ok(routing) => response::Response {
             status_code: routing.status_code,
@@ -63,7 +59,9 @@ fn translate(routing_result: Result<response::Response, String>) -> String {
             headers: routing.headers,
             body: routing.body
         },
-        Err(error) => response::error(error),
+        Err(error) => {
+            response::error(error.status_message.as_str(), error.body)
+        },
     };
 
     response::generate_for(result)

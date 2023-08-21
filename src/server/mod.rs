@@ -2,7 +2,6 @@ mod response;
 mod router;
 mod socket;
 
-use router::handler;
 use std::sync::Arc;
 use log::{debug, error, info};
 use tokio::net::{TcpListener};
@@ -42,7 +41,7 @@ impl Server {
                     Ok((stream, _)) => {
                         let shared_pool = self.db.clone();
                         debug!("  processing incoming request");
-                        handler::handle_input(stream, shared_pool).await
+                        router::handle_input(stream, shared_pool).await
                     }
                     Err(err) => error!("failed to read from socket; err: {err:?}"),
                 }
