@@ -1,9 +1,8 @@
 use log::error;
-use crate::server::router::RoutingResult;
+use super::RoutingResult;
+use super::ACCESS_CONTROL_HEADERS;
 
-const ACCESS_CONTROL_HEADERS: &str = super::ACCESS_CONTROL_HEADERS;
-
-pub fn send_email(request: &str) -> RoutingResult {
+pub fn send(request: &str) -> RoutingResult {
     let mut headers_body = request.split("\r\n\r\n");
     let _headers = headers_body.next().expect("No headers were sent with request");
     match headers_body.next() {

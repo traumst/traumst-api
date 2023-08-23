@@ -23,7 +23,7 @@ pub fn generate_for(response: Response) -> String {
         response.body)
 }
 
-pub fn error(err: &str, body: String) -> Response {
+pub fn generate_error(err: &str, body: String) -> Response {
     match err {
         "Bad Request" => Response {
             status_code: "400".to_string(),

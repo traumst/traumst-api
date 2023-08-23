@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use log::error;
 use super::RoutingResult;
-
 use super::ACCESS_CONTROL_HEADERS;
 
 pub async fn get(path: &str) -> RoutingResult {

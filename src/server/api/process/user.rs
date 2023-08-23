@@ -4,8 +4,8 @@ use crate::chat;
 use crate::db;
 use crate::server::response;
 
-pub async fn create_user(head: &str, body: &str, shared_pool: Arc<db::pool::Bridge>)
-    -> Result<response::Response, response::Response>
+pub async fn create(head: &str, body: &str, shared_pool: Arc<db::pool::Bridge>)
+                    -> Result<response::Response, response::Response>
 {
     let user = chat::model::User::from_string(body);
     if user.is_none() {
@@ -18,8 +18,17 @@ pub async fn create_user(head: &str, body: &str, shared_pool: Arc<db::pool::Brid
     }
 
     let user = user.unwrap();
+    if user.id > 0 {
+        return Err(response::Response {
+            status_code: "400".to_string(),
+            status_message: "Bad Request".to_string(),
+            headers: "".to_string(),
+            body: format!("User already exists: {body}"),
+        });
+    }
+
     let new_user = db::model::User {
-        id: 0,
+        id: user.id,
         name: user.name,
         hash: user.hash,
         avatar: chat::model::Avatar { id: 0, value: String::new() }.id,
@@ -43,8 +52,9 @@ pub async fn create_user(head: &str, body: &str, shared_pool: Arc<db::pool::Brid
     })
 }
 
-pub async fn get_user(head: &str, user_id: u32, shared_pool: Arc<db::pool::Bridge>)
-    -> Result<response::Response, response::Response> {
+pub async fn get(head: &str, user_id: u32, shared_pool: Arc<db::pool::Bridge>)
+                 -> Result<response::Response, response::Response>
+{
     match shared_pool.get_user(user_id).await {
         None => {
             info!("User not found by id: {user_id}");

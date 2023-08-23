@@ -6,6 +6,7 @@ use super::Avatar;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
+    #[serde(default)]
     pub id: u32,
     pub name: String,
     pub hash: u32,
@@ -43,9 +44,14 @@ mod tests {
 
     #[test]
     fn test_from_string() {
-        let json = "{{\"name\":\"hello\",\"hash\":123456}}";
+        let json = "{\"name\":\"hello\",\"hash\":123456}";
         let user = User::from_string(json).unwrap();
+        assert_eq!(user.id, 0);
         assert_eq!(user.name, "hello");
         assert_eq!(user.hash, 123456);
+        assert!(user.avatar.is_none());
+        assert!(user.auth.is_none());
+        assert!(user.chats.is_none());
+        assert!(user.contacts.is_none());
     }
 }

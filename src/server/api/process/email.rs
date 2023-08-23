@@ -1,7 +1,7 @@
 use crate::infra::email;
 use crate::server::response;
 
-pub fn send_email(_: &str, body: &str) -> Result<response::Response, response::Response> {
+pub fn send(body: &str) -> Result<response::Response, response::Response> {
     match email::parse_request(body) {
         Ok(json) => { handle_success(json) }
         Err(msg) => {

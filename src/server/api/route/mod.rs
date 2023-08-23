@@ -1,14 +1,10 @@
-mod email;
 mod user;
+mod email;
 
 use super::RoutingResult;
 use super::ACCESS_CONTROL_HEADERS;
 
-pub use email::send_email;
-pub use user::get_user;
-pub use user::create_user;
-
-pub async fn handle_request(request: &str) -> RoutingResult {
+pub async fn direct(request: &str) -> RoutingResult {
     let parts: Vec<&str> = request.split_whitespace().collect();
     let method = parts[0];
     let path = parts[1];
@@ -34,7 +30,7 @@ fn options(path: &str) -> RoutingResult {
 async fn get(path: &str) -> RoutingResult {
     let part = path.split('/').find(|&p| p.ne(""));
     match part.unwrap_or("not_found") {
-        "user" => super::user::get(path).await,
+        "user" => user::get(path).await,
         "ping" => send_pong(),
         _ => RoutingResult::Err("404".to_string(), "Not Found".to_string(), path.to_string()),
     }
@@ -43,8 +39,8 @@ async fn get(path: &str) -> RoutingResult {
 async fn post(path: &str, request: &str) -> RoutingResult {
     let part = path.split('/').find(|&p| p.ne(""));
     match part.unwrap_or("not_found") {
-        "user" => super::user::create(request).await,
-        "email" => super::email::send_email(request),
+        "user" => user::create(request).await,
+        "email" => email::send(request),
         _ => RoutingResult::Err("404".to_string(), "Not Found".to_string(), path.to_string()),
     }
 }
