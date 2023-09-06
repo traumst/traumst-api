@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use log::error;
+use crate::api::Crud;
 use super::RoutingResult;
 use super::ACCESS_CONTROL_HEADERS;
 
@@ -16,7 +17,7 @@ pub async fn get(path: &str) -> RoutingResult {
         return RoutingResult::Err("400".to_string(), "Bad Request".to_string(), path.to_string());
     }
 
-    return RoutingResult::User(ACCESS_CONTROL_HEADERS.to_string(), "".to_string(), user_id.unwrap());
+    return RoutingResult::User(Crud::Read, ACCESS_CONTROL_HEADERS.to_string(), "".to_string(), user_id.unwrap());
 }
 
 pub async fn create(request: &str) -> RoutingResult {
@@ -24,7 +25,7 @@ pub async fn create(request: &str) -> RoutingResult {
     let _headers = headers_body.next().expect("No headers were sent with request");
     match headers_body.next() {
         Some(body) => {
-            RoutingResult::User(ACCESS_CONTROL_HEADERS.to_string(), body.to_string(), 0)
+            RoutingResult::User(Crud::Create, ACCESS_CONTROL_HEADERS.to_string(), body.to_string(), 0)
         }
         None => {
             error!("Body of email request appears empty");

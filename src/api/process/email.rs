@@ -1,5 +1,5 @@
 use crate::infra::email;
-use crate::server::response;
+use crate::api::response;
 
 pub fn send(body: &str) -> Result<response::Response, response::Response> {
     match email::parse_request(body) {

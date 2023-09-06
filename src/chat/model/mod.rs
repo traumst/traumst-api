@@ -3,7 +3,7 @@ mod chat;
 mod user;
 
 use serde::{Serialize, Deserialize};
-pub use auth::{Auth, AuthType};
+pub use auth::Auth;
 pub use chat::*;
 pub use user::User;
 

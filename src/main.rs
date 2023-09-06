@@ -1,8 +1,11 @@
+#![feature(async_closure)]
+
 mod config;
 mod infra;
 mod server;
 mod db;
 mod chat;
+mod api;
 
 use std::error;
 use log::{error, warn};

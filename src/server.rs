@@ -1,21 +1,23 @@
-mod api;
-mod response;
-mod socket;
-
-use log::trace;
-use log::debug;
-use log::info;
-use log::error;
+use log::{
+    debug,
+    trace,
+    info,
+    error,
+};
 use std::sync::Arc;
-use tokio::net::TcpListener;
-use crate::db;
-use crate::config;
-use crate::infra;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::TcpStream;
-use response::generate_error;
-use response::generate_for;
-use response::Response;
+use tokio::{
+    net::TcpListener,
+    net::TcpStream,
+    io::AsyncReadExt,
+    io::AsyncWriteExt,
+};
+use crate::{
+    db,
+    config,
+    infra,
+    api::response,
+    api
+};
 
 pub struct Server {
     db: Arc<db::pool::Bridge>,
@@ -27,7 +29,8 @@ impl Server {
         let options = db::pool::BridgeOptions {
             conn_str: config::db_conn_str(),
             pool_size: config::db_conn_pool(),
-            op_timeout_ms: 5000, /* 5 sec */
+            op_timeout_ms: 5000,
+            /* 5 sec */
         };
         let db = db::pool::Bridge::init(options).await;
         Self {
@@ -65,33 +68,33 @@ async fn handle_input(mut stream: TcpStream, shared_pool: Arc<db::pool::Bridge>)
     let mut buffer = [0; 2048];
     match stream.read(&mut buffer).await {
         Ok(bytes_read) => match std::str::from_utf8(&buffer[..bytes_read]) {
-            Ok(http_request) => process(stream, http_request, shared_pool).await,
+            Ok(http_request) => handle_request(stream, http_request, shared_pool).await,
             Err(e) => error!("Failed to read input into string: {e:?}"),
         }
         Err(e) => error!("Failed to read input stream {e:?}"),
     }
 }
 
-async fn process(mut stream: TcpStream, http_request: &str, shared_pool: Arc<db::pool::Bridge>) {
+async fn handle_request(mut stream: TcpStream, http_request: &str, shared_pool: Arc<db::pool::Bridge>) {
     let routed = api::route(http_request, shared_pool).await;
-    let result = translate(routed);
+    let result = translate_response(routed);
     match stream.write_all(result.as_bytes()).await {
         Ok(_) => trace!("Response output written"),
         Err(e) => error!("Failed to write response output {e:?}"),
     }
 }
 
-fn translate(routing_result: Result<Response, Response>) -> String {
+fn translate_response(routing_result: Result<response::Response, response::Response>) -> String {
     let result = match routing_result {
-        Ok(routing) => Response {
+        Ok(routing) => response::Response {
             status_code: routing.status_code,
             status_message: routing.status_message,
             headers: routing.headers,
             body: routing.body
         },
         Err(error) => {
-            generate_error(error.status_message.as_str(), error.body)
+            response::generate_error(error.status_message.as_str(), error.body)
         }
     };
-    generate_for(result)
+    response::generate_for(result)
 }
