@@ -1,0 +1,2 @@
+thread 'rustc' panicked at 'failed to print diagnostics: Os { code: 32, kind: BrokenPipe, message: "Broken pipe" }', compiler/rustc_errors/src/json.rs:162:13
+stack backtrace:
