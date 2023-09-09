@@ -1,4 +1,4 @@
-pub mod model;
+mod model;
 
 // pub struct App {
 //     chats: Vec<model::Chat>,
