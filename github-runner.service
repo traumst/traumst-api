@@ -1,0 +1,15 @@
+[Unit]
+Description=GitHub Actions Runner
+After=network.target
+
+[Service]
+ExecStart=/home/devops/actions-runner/run.sh
+WorkingDirectory=/home/devops/actions-runner
+KillMode=process
+Restart=always
+RestartSec=10
+User=devops
+Group=devops
+
+[Install]
+WantedBy=multi-user.target

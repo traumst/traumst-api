@@ -18,4 +18,4 @@ db/
 .env
 .DS_Store
 nginx.conf
-github-runner.service
+rustc-ice-*.txt
