@@ -24,7 +24,7 @@ impl User {
                 error!("Failed to parse User, {err:?}");
                 None
             }
-        }   
+        }
     }
 
     pub fn to_string(&self) -> String {

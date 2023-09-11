@@ -76,15 +76,15 @@ async fn handle_input(mut stream: TcpStream, shared_pool: Arc<db::pool::Bridge>)
 }
 
 async fn handle_request(mut stream: TcpStream, http_request: &str, shared_pool: Arc<db::pool::Bridge>) {
-    let routed = api::route(http_request, shared_pool).await;
-    let result = translate_response(routed);
-    match stream.write_all(result.as_bytes()).await {
+    let result = api::handle(http_request, shared_pool).await;
+    let response = serialize(result);
+    match stream.write_all(response.as_bytes()).await {
         Ok(_) => trace!("Response output written"),
         Err(e) => error!("Failed to write response output {e:?}"),
     }
 }
 
-fn translate_response(routing_result: Result<response::Response, response::Response>) -> String {
+fn serialize(routing_result: Result<response::Response, response::Response>) -> String {
     let result = match routing_result {
         Ok(routing) => response::Response {
             status_code: routing.status_code,
@@ -92,9 +92,7 @@ fn translate_response(routing_result: Result<response::Response, response::Respo
             headers: routing.headers,
             body: routing.body
         },
-        Err(error) => {
-            response::generate_error(error.status_message.as_str(), error.body)
-        }
+        Err(error) => error
     };
-    response::generate_for(result)
+    response::serialize(result)
 }

@@ -15,28 +15,12 @@ pub enum ChatAction {
 
 pub async fn process(
     action: ChatAction,
-    head: &str,
     _body: &str,
     _shared_pool: Arc<db::pool::Bridge>
 ) -> Result<response::Response, response::Response> {
     match action {
-        ChatAction::Create => Err(response::Response {
-            status_code: "501".to_string(),
-            status_message: "Not Implemented".to_string(),
-            headers: head.to_string(),
-            body: "".to_string(),
-        }),
-        ChatAction::Join => Err(response::Response {
-            status_code: "501".to_string(),
-            status_message: "Not Implemented".to_string(),
-            headers: head.to_string(),
-            body: "".to_string(),
-        }),
-        ChatAction::Send => Err(response::Response {
-            status_code: "501".to_string(),
-            status_message: "Not Implemented".to_string(),
-            headers: head.to_string(),
-            body: "".to_string(),
-        }),
+        ChatAction::Create => Err(response::err501()),
+        ChatAction::Join => Err(response::err501()),
+        ChatAction::Send => Err(response::err501()),
     }
 }

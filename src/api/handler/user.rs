@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use log::warn;
 use serde::{Deserialize, Serialize};
 use crate::db;
 use crate::api;
@@ -12,18 +11,16 @@ pub enum UserAction {
 
 pub async fn process(
     action: UserAction,
-    head: &str,
     body: &str,
     shared_pool: Arc<db::pool::Bridge>
 ) -> Result<api::response::Response, api::response::Response> {
     match action {
-        UserAction::Create => create(head, body, shared_pool).await,
-        UserAction::Auth => auth(head, body, shared_pool).await,
+        UserAction::Create => create(body, shared_pool).await,
+        UserAction::Auth => auth(body, shared_pool).await,
     }
 }
 
 async fn create(
-    head: &str,
     body: &str,
     shared_pool: Arc<db::pool::Bridge>
 ) -> Result<api::response::Response, api::response::Response> {
@@ -34,65 +31,40 @@ async fn create(
             let auth = match auth {
                 Some(auth) => auth,
                 None => {
-                    return Err(api::response::Response {
-                        status_code: "400".to_string(),
-                        status_message: "Bad Request".to_string(),
-                        headers: "".to_string(),
-                        body: format!("missing auth details"),
-                    });
+                    return Err(api::response::err400(format!("missing auth details")));
                 }
             };
 
-            create_user(head, user, auth, shared_pool).await
+            create_user(user, auth, shared_pool).await
         }
     }
 }
-pub async fn auth(head: &str, body: &str, shared_pool: Arc<db::pool::Bridge>)
-    -> Result<api::response::Response, api::response::Response>
-{
+
+pub async fn auth(
+    body: &str,
+    shared_pool: Arc<db::pool::Bridge>
+) -> Result<api::response::Response, api::response::Response> {
     match api::model::Auth::from_string(body) {
-        None => Err(api::response::Response {
-            status_code: "400".to_string(),
-            status_message: "Bad Request".to_string(),
-            headers: "".to_string(),
-            body: format!("authentication failed"),
-        }),
+        None => Err(api::response::err400(
+            format!("authentication failed"))),
         Some(auth) => match shared_pool.get_auth(auth.kind, auth.hash).await {
-            None => Err(api::response::Response {
-                status_code: "404".to_string(),
-                status_message: "Not Found".to_string(),
-                headers: "".to_string(),
-                body: "".to_string(),
-            }),
+            None => Err(api::response::err404("invalid auth".to_string())),
             Some(auth) => match shared_pool.get_user(auth.user_id).await {
-                None => {
-                    warn!("User not found by id: {:?}", auth.user_id);
-                    Err(api::response::Response {
-                        status_code: "404".to_string(),
-                        status_message: "Not Found".to_string(),
-                        headers: "".to_string(),
-                        body: "".to_string(),
-                    })
-                }
-                Some(user) => Ok(api::response::Response {
-                    status_code: "200".to_string(),
-                    status_message: "Ok".to_string(),
-                    headers: head.to_string(),
-                    body: api::model::User {
-                        id: user.id,
-                        name: user.name,
-                        hash: user.hash,
-                        auth: None, // find by user.auth type and value
-                        chats: None, // find by user.id
-                    }.to_string(),
-                })
+                None => Err(api::response::err404("invalid user".to_string())),
+                // AL TODO provide header
+                Some(user) => Ok(api::response::ok200(api::model::User {
+                    id: user.id,
+                    name: user.name,
+                    hash: user.hash,
+                    auth: None, // find by user.auth type and value
+                    chats: None, // find by user.id
+                }.to_string()))
             }
         }
     }
 }
 
 async fn create_user(
-    head: &str,
     user: api::model::User,
     auth: api::model::Auth,
     shared_pool: Arc<db::pool::Bridge>
@@ -114,41 +86,24 @@ async fn create_user(
     ).await;
 
     if user_id == 0 {
-        return Err(api::response::Response {
-            status_code: "504".to_string(),
-            status_message: "Gateway Timeout".to_string(),
-            headers: "".to_string(),
-            body: format!("user creation failed"),
-        });
+        return Err(api::response::err504(format!("user creation failed")));
     }
 
-    Ok(api::response::Response {
-        status_code: "200".to_string(),
-        status_message: "Ok".to_string(),
-        headers: head.to_string(),
-        body: user_id.to_string(),
-    })
+    // TODO provide header
+    Ok(api::response::ok200(user_id.to_string()))
 }
 
 fn parse_creation_request(body: &str) -> Result<api::model::User, api::response::Response> {
     let user = api::model::User::from_string(body);
     if user.is_none() {
-        return Err(api::response::Response {
-            status_code: "400".to_string(),
-            status_message: "Bad Request".to_string(),
-            headers: "".to_string(),
-            body: format!("Cannot parse input json"),
-        });
+        return Err(api::response::err400(
+            format!("Cannot parse input json")));
     }
 
     let user = user.unwrap();
     if user.id > 0 {
-        return Err(api::response::Response {
-            status_code: "400".to_string(),
-            status_message: "Bad Request".to_string(),
-            headers: "".to_string(),
-            body: format!("User already exists: {body}"),
-        });
+        return Err(api::response::err400(
+            format!("User already exists: {body}")));
     }
 
     Ok(user)

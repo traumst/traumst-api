@@ -3,9 +3,8 @@ mod email;
 mod chat;
 
 use super::RoutingResult;
-use super::ACCESS_CONTROL_HEADERS;
 
-pub async fn direct(request: &str) -> RoutingResult {
+pub async fn route(request: &str) -> RoutingResult {
     let parts: Vec<&str> = request.split_whitespace().collect();
     let method = parts[0];
     let path = parts[1];
@@ -66,6 +65,6 @@ async fn post_chat(path: &str, request: &str) -> RoutingResult {
     }
 }
 
-fn send_pong() -> RoutingResult { RoutingResult::Pong(ACCESS_CONTROL_HEADERS.to_string(), "PONG".to_string()) }
+fn send_pong() -> RoutingResult { RoutingResult::Pong("PONG".to_string()) }
 
-fn send_options() -> RoutingResult { RoutingResult::Options(ACCESS_CONTROL_HEADERS.to_string()) }
+fn send_options() -> RoutingResult { RoutingResult::Options }

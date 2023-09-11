@@ -1,6 +1,6 @@
 use log::error;
 use crate::api::handler::chat::ChatAction;
-use crate::api::{ACCESS_CONTROL_HEADERS, RoutingResult};
+use crate::api::RoutingResult;
 
 pub async fn create(request: &str) -> RoutingResult {
     let mut headers_body = request.split("\r\n\r\n");
@@ -17,11 +17,13 @@ pub async fn create(request: &str) -> RoutingResult {
     match headers_body.next() {
         Some(body) => RoutingResult::Chat(
             ChatAction::Create,
-            ACCESS_CONTROL_HEADERS.to_string(),
             body.to_string()),
         None => {
             error!("Body of email request appears empty");
-            return RoutingResult::Err("400".to_string(), "Bad Request".to_string(), request.to_string());
+            return RoutingResult::Err(
+                "400".to_string(),
+                "Bad Request".to_string(),
+                request.to_string());
         }
     }
 }

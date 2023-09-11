@@ -1,47 +1,43 @@
 use std::sync::Arc;
 use super::db::pool::Bridge;
-use response::Response;
 
 pub mod response;
 pub mod model;
 mod router;
 mod handler;
 
-pub const ACCESS_CONTROL_HEADERS: &str = r#"Access-Control-Allow-Origin: *
-Access-Control-Allow-Methods: POST, GET, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Content-Length"#;
-
 pub enum RoutingResult {
-    Chat(handler::chat::ChatAction, String, String),
-    User(handler::user::UserAction, String, String),
-    Email(String, String),
-    Pong(String, String),
-    Options(String),
+    Chat(handler::chat::ChatAction, String),
+    User(handler::user::UserAction, String),
+    Email(String),
+    Pong(String),
+    Options,
     Err(String, String, String),
 }
 
-pub async fn route(http_request: &str, shared_pool: Arc<Bridge>) -> Result<Response, Response> {
-    let res = router::direct(http_request).await;
+pub async fn handle(http_request: &str, shared_pool: Arc<Bridge>) -> Result<response::Response, response::Response> {
+    let res = router::route(http_request).await;
     match res {
-        RoutingResult::Chat(action, head, body) =>
-            handler::chat::process(action, head.as_str(), body.as_str(), shared_pool).await,
-        RoutingResult::User(action, head, body) =>
-            handler::user::process(action, head.as_str(), body.as_str(), shared_pool).await,
-        RoutingResult::Email(_, body) =>
+        RoutingResult::Chat(action, body) =>
+            handler::chat::process(
+                action,
+                body.as_str(),
+                shared_pool
+            ).await,
+        RoutingResult::User(action, body) =>
+            handler::user::process(
+                action,
+                body.as_str(),
+                shared_pool
+            ).await,
+        RoutingResult::Email(body) =>
             handler::email::send(body.as_str()),
-        RoutingResult::Pong(head, body) => Ok(Response {
-            status_code: "200".to_string(),
-            status_message: "Ok".to_string(),
-            headers: head.to_string(),
-            body: body.to_string(),
-        }),
-        RoutingResult::Options(head) => Ok(Response {
-            status_code: "204".to_string(),
-            status_message: "No Content".to_string(),
-            headers: head.to_string(),
-            body: "".to_string(),
-        }),
-        RoutingResult::Err(code, status, body) => Err(Response {
+        // TODO provide head
+        RoutingResult::Pong(body) => Ok(response::ok200(body.to_string())),
+        // TODO provide head
+        RoutingResult::Options => Ok(response::ok204()),
+        // TODO replace this
+        RoutingResult::Err(code, status, body) => Err(response::Response {
             status_code: code,
             status_message: status,
             headers: "".to_string(),
