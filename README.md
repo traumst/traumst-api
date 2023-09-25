@@ -12,6 +12,7 @@ We'll see what else I'd want to experiment with.
 
 ## Project structure
 
+* /chat - \*in progress\* has or will have it's own [README.md, here](/chat/README.md)
 * /src
     * main.rs - init for utilities and start the server
     * config.rs - read env variables
@@ -38,6 +39,5 @@ We'll see what else I'd want to experiment with.
         * /model - structs representing rows of appropriate tables
             * user.rs
             * auth.rs
-    * /chat - \*TBD\*
 * /.github
     * deploy.yml - github action - deployment automation script, relies on the presence of the Dockerfile

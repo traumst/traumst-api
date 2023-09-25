@@ -20,6 +20,7 @@ use crate::{
 };
 
 pub struct Server {
+    //chat: Arc<db::pool::Bridge>,
     db: Arc<db::pool::Bridge>,
 }
 
@@ -51,6 +52,7 @@ impl Server {
             loop {
                 match listener.accept().await {
                     Ok((stream, _)) => {
+                        //let chat_app = self.chat.clone();
                         let shared_pool = self.db.clone();
                         tokio::spawn(async move {
                             debug!("  processing incoming request");
@@ -64,7 +66,10 @@ impl Server {
     }
 }
 
-async fn handle_input(mut stream: TcpStream, shared_pool: Arc<db::pool::Bridge>) {
+async fn handle_input (
+    mut stream: TcpStream,
+    shared_pool: Arc<db::pool::Bridge>
+) {
     let mut buffer = [0; 2048];
     match stream.read(&mut buffer).await {
         Ok(bytes_read) => match std::str::from_utf8(&buffer[..bytes_read]) {
@@ -75,7 +80,11 @@ async fn handle_input(mut stream: TcpStream, shared_pool: Arc<db::pool::Bridge>)
     }
 }
 
-async fn handle_request(mut stream: TcpStream, http_request: &str, shared_pool: Arc<db::pool::Bridge>) {
+async fn handle_request(
+    mut stream: TcpStream,
+    http_request: &str,
+    shared_pool: Arc<db::pool::Bridge>
+) {
     let result = api::handle(http_request, shared_pool).await;
     let response = serialize(result);
     match stream.write_all(response.as_bytes()).await {
@@ -84,7 +93,9 @@ async fn handle_request(mut stream: TcpStream, http_request: &str, shared_pool: 
     }
 }
 
-fn serialize(routing_result: Result<response::Response, response::Response>) -> String {
+fn serialize(
+    routing_result: Result<response::Response, response::Response>
+) -> String {
     let result = match routing_result {
         Ok(routing) => response::Response {
             status_code: routing.status_code,
