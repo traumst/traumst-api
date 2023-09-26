@@ -20,7 +20,7 @@ use crate::{
 };
 
 pub struct Server {
-    //chat: Arc<db::pool::Bridge>,
+    chat: Arc<chat::app::App>,
     db: Arc<db::pool::Bridge>,
 }
 
@@ -34,7 +34,9 @@ impl Server {
             /* 5 sec */
         };
         let db = db::pool::Bridge::init(options).await;
+        let chat = chat::app::App::new();
         Self {
+            chat: Arc::new(chat),
             db: Arc::new(db),
         }
     }
@@ -52,11 +54,11 @@ impl Server {
             loop {
                 match listener.accept().await {
                     Ok((stream, _)) => {
-                        //let chat_app = self.chat.clone();
-                        let shared_pool = self.db.clone();
+                        let chat = self.chat.clone();
+                        let db = self.db.clone();
                         tokio::spawn(async move {
                             debug!("  processing incoming request");
-                            handle_input(stream, shared_pool).await
+                            handle_input(stream, chat, db).await
                         });
                     }
                     Err(err) => error!("failed to read from socket; err: {err:?}"),
@@ -68,12 +70,13 @@ impl Server {
 
 async fn handle_input (
     mut stream: TcpStream,
-    shared_pool: Arc<db::pool::Bridge>
+    chat: Arc<chat::app::App>,
+    db: Arc<db::pool::Bridge>
 ) {
     let mut buffer = [0; 2048];
     match stream.read(&mut buffer).await {
         Ok(bytes_read) => match std::str::from_utf8(&buffer[..bytes_read]) {
-            Ok(http_request) => handle_request(stream, http_request, shared_pool).await,
+            Ok(http_request) => handle_request(stream, http_request, chat, db).await,
             Err(e) => error!("Failed to read input into string: {e:?}"),
         }
         Err(e) => error!("Failed to read input stream {e:?}"),
@@ -83,9 +86,10 @@ async fn handle_input (
 async fn handle_request(
     mut stream: TcpStream,
     http_request: &str,
-    shared_pool: Arc<db::pool::Bridge>
+    chat: Arc<chat::app::App>,
+    db: Arc<db::pool::Bridge>
 ) {
-    let result = api::handle(http_request, shared_pool).await;
+    let result = api::handle(http_request, chat, db).await;
     let response = serialize(result);
     match stream.write_all(response.as_bytes()).await {
         Ok(_) => trace!("Response output written"),

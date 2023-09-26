@@ -15,20 +15,25 @@ pub enum RoutingResult {
     Err(String, String, String),
 }
 
-pub async fn handle(http_request: &str, shared_pool: Arc<Bridge>) -> Result<response::Response, response::Response> {
+pub async fn handle(
+    http_request: &str,
+    chat: Arc<chat::app::App>,
+    db: Arc<Bridge>
+) -> Result<response::Response, response::Response> {
     let res = router::route(http_request).await;
     match res {
         RoutingResult::Chat(action, body) =>
             handler::chat::process(
                 action,
                 body.as_str(),
-                shared_pool
+                chat,
+                db
             ).await,
         RoutingResult::User(action, body) =>
             handler::user::process(
                 action,
                 body.as_str(),
-                shared_pool
+                db
             ).await,
         RoutingResult::Email(body) =>
             handler::email::send(body.as_str()),

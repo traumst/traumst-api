@@ -16,6 +16,7 @@ pub enum ChatAction {
 pub async fn process(
     action: ChatAction,
     _body: &str,
+    _chat: Arc<chat::app::App>,
     _shared_pool: Arc<db::pool::Bridge>
 ) -> Result<response::Response, response::Response> {
     match action {
