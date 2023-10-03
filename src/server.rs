@@ -30,8 +30,7 @@ impl Server {
         let options = db::pool::BridgeOptions {
             conn_str: config::db_conn_str(),
             pool_size: config::db_conn_pool(),
-            op_timeout_ms: 5000,
-            /* 5 sec */
+            op_timeout_ms: 5000, /* 5 sec */
         };
         let db = db::pool::Bridge::init(options).await;
         let chat = chat::app::App::new();

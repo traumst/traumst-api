@@ -1,3 +1,4 @@
+mod model;
 
 pub mod app {
     use super::model;
@@ -12,41 +13,20 @@ pub mod app {
                 chats: vec![],
             }
         }
-    }
-}
 
-pub mod model {
-    #[derive(Debug, Clone)]
-    pub struct Chat {
-        id: u32,
-        users: Vec<u32>,
-        history: Option<Vec<ChatMessage>>,
-    }
+        pub fn create_chat(&self, user_id: u32) -> u32 {
+            let last_chat_id = self.chats.iter()
+                .max_by_key(|&chat| { return chat.id })
+                .unwrap_or(&model::Chat::default())
+                .id;
 
-    #[derive(Debug, Clone)]
-    pub struct ChatMessage {
-        header: ChatHeader,
-        body: String,
-        footer: ChatFooter,
-    }
+            let new_chat = model::Chat {
+                id: last_chat_id + 1,
+                users: vec![user_id],
+                history: Some(vec![]),
+            };
 
-    #[derive(Debug, Clone)]
-    pub struct ChatHeader {
-        avatar: u32,
-        user: u32,
-        timestamp: String,
-    }
-
-    #[derive(Debug, Clone)]
-    pub struct ChatFooter {
-        sent: bool,
-        read: bool,
-        options: Vec<ChatOption>
-    }
-
-    #[derive(Debug, Clone)]
-    pub struct ChatOption {
-        emote: Vec<String>,
-        act: Vec<String>,
+            new_chat.id
+        }
     }
 }
