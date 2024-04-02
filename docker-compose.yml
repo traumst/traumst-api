@@ -19,8 +19,6 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_USER=${SMTP_USER}
       - EMAIL_RECEIVER=${EMAIL_RECEIVER}
-      - DB_CONN=${DB_CONN}
-      - DB_CONN_POOL=${DB_CONN_POOL}
     volumes:
       - traumst-vol:/data
 

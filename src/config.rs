@@ -3,15 +3,7 @@ use std::env;
 pub fn listen_on_port() -> u16 {
     match env::var("LISTEN_PORT") {
         Ok(val) => val.parse().expect("Invalid LISTEN_PORT in env"),
-        Err(_e) => panic!("LISTEN_PORT was not specified in env")
-    }
-}
-
-pub fn db_conn_str() -> String { env::var("DB_CONN").expect("DB_CONN is not set") }
-pub fn db_conn_pool() -> u32 {
-    match env::var("DB_CONN_POOL") {
-        Ok(val) => val.parse().expect("Invalid LISTEN_PORT in env"),
-        Err(_e) => panic!("LISTEN_PORT was not specified in env")
+        Err(e) => panic!("LISTEN_PORT was not specified in env: {}", e)
     }
 }
 

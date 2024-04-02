@@ -54,7 +54,7 @@ pub fn err400(message: String) -> Response {
     }
 }
 
-pub fn err404(message: String) -> Response {
+pub fn _err404(message: String) -> Response {
     Response {
         status_code: "404".to_string(),
         status_message: "Bad Request".to_string(),
@@ -81,7 +81,7 @@ pub fn err501() -> Response {
     }
 }
 
-pub fn err504(message: String) -> Response {
+pub fn _err504(message: String) -> Response {
     Response {
         status_code: "504".to_string(),
         status_message: "Gateway Timeout".to_string(),

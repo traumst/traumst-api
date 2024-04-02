@@ -3,7 +3,6 @@
 mod config;
 mod infra;
 mod server;
-mod db;
 mod api;
 
 use std::error;
