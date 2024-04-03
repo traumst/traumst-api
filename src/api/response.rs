@@ -72,6 +72,7 @@ pub fn err500(message: String) -> Response {
     }
 }
 
+#[allow(dead_code)] // it's not dead, just a compiler quirk
 pub fn err501() -> Response {
     Response {
         status_code: "501".to_string(),

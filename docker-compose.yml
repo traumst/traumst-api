@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: api
-    image: traumst-api:v3
+    image: traumst-api:v4
     ports:
       - "${LISTEN_PORT}:${LISTEN_PORT}"
     environment:
@@ -28,7 +28,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
-    image: traumst-web:v3
+    image: traumst-web:v4
     ports:
       - "80:80"
       - "443:443"

@@ -2,6 +2,7 @@
 FROM rust:latest as builder
 WORKDIR /app
 COPY . .
+RUN rustup default nightly
 RUN cargo build --release
 
 # create a smaller final image
