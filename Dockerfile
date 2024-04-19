@@ -6,9 +6,8 @@ RUN rustup default nightly
 RUN cargo build --release
 
 # create a smaller final image
-FROM debian:bullseye-slim as api
+FROM debian:bookworm-slim as api
 RUN apt-get update && \
-    apt-get install -y libssl1.1 && \
     apt-get install -y ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /data

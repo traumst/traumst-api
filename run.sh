@@ -1,1 +1,1 @@
-source .env && cargo run
+source .env.export && cargo run
