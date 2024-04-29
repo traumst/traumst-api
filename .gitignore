@@ -17,6 +17,7 @@ Cargo.lock
 .sqlx/
 db/
 .env
+.env.export
 .DS_Store
 nginx.conf
 rustc-ice-*.txt

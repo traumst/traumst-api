@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2021"
 
 [profile.dev]
-opt-level = 0
+opt-level = 3
 
 [profile.release]
 opt-level = 3
@@ -12,7 +12,6 @@ opt-level = 3
 [dependencies]
 tokio = { version = "1.29", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
-sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio-native-tls", "macros"] }
 serde_json = "1.0"
 lettre = "0.10"
 log = "0.4"

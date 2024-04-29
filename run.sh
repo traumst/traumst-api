@@ -1,0 +1,1 @@
+source .env.export && cargo run

@@ -3,8 +3,6 @@
 mod config;
 mod infra;
 mod server;
-mod db;
-mod chat;
 mod api;
 
 use std::error;
@@ -15,7 +13,7 @@ use tokio::signal;
 async fn main() -> Result<(), Box<dyn error::Error>> {
     server::Server::new().await
         .init().await;
-
+    
     match signal::ctrl_c().await {
         Ok(()) => warn!("Shutdown signal received"),
         Err(err) => error!("Unable to listen for shutdown signal: {err:?}")

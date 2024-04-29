@@ -4,7 +4,6 @@ use log::{
     info,
     error,
 };
-use std::sync::Arc;
 use tokio::{
     net::TcpListener,
     net::TcpStream,
@@ -12,7 +11,6 @@ use tokio::{
     io::AsyncWriteExt,
 };
 use crate::{
-    db,
     config,
     infra,
     api::response,
@@ -20,22 +18,13 @@ use crate::{
 };
 
 pub struct Server {
-    db: Arc<db::pool::Bridge>,
+    //db: Arc<db::pool::Bridge>,
 }
 
 impl Server {
     pub async fn new() -> Self {
         infra::logger::init();
-        let options = db::pool::BridgeOptions {
-            conn_str: config::db_conn_str(),
-            pool_size: config::db_conn_pool(),
-            op_timeout_ms: 5000,
-            /* 5 sec */
-        };
-        let db = db::pool::Bridge::init(options).await;
-        Self {
-            db: Arc::new(db),
-        }
+        Self{}
     }
 
     pub async fn init(self) {
@@ -51,10 +40,10 @@ impl Server {
             loop {
                 match listener.accept().await {
                     Ok((stream, _)) => {
-                        let shared_pool = self.db.clone();
+                        //let chat_app = self.chat.clone();
                         tokio::spawn(async move {
                             debug!("  processing incoming request");
-                            handle_input(stream, shared_pool).await
+                            handle_input(stream).await
                         });
                     }
                     Err(err) => error!("failed to read from socket; err: {err:?}"),
@@ -64,19 +53,24 @@ impl Server {
     }
 }
 
-async fn handle_input(mut stream: TcpStream, shared_pool: Arc<db::pool::Bridge>) {
+async fn handle_input (
+    mut stream: TcpStream
+) {
     let mut buffer = [0; 2048];
     match stream.read(&mut buffer).await {
         Ok(bytes_read) => match std::str::from_utf8(&buffer[..bytes_read]) {
-            Ok(http_request) => handle_request(stream, http_request, shared_pool).await,
+            Ok(http_request) => handle_request(stream, http_request).await,
             Err(e) => error!("Failed to read input into string: {e:?}"),
         }
         Err(e) => error!("Failed to read input stream {e:?}"),
     }
 }
 
-async fn handle_request(mut stream: TcpStream, http_request: &str, shared_pool: Arc<db::pool::Bridge>) {
-    let result = api::handle(http_request, shared_pool).await;
+async fn handle_request(
+    mut stream: TcpStream,
+    http_request: &str,
+) {
+    let result = api::handle(http_request).await;
     let response = serialize(result);
     match stream.write_all(response.as_bytes()).await {
         Ok(_) => trace!("Response output written"),
@@ -84,7 +78,9 @@ async fn handle_request(mut stream: TcpStream, http_request: &str, shared_pool: 
     }
 }
 
-fn serialize(routing_result: Result<response::Response, response::Response>) -> String {
+fn serialize(
+    routing_result: Result<response::Response, response::Response>
+) -> String {
     let result = match routing_result {
         Ok(routing) => response::Response {
             status_code: routing.status_code,
