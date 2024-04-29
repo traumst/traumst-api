@@ -57,15 +57,39 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # rollback here only rolls back 'api' container
       - name: Pull and Deploy traumst-api
         run: |
           docker-compose pull traumst-api
-          docker-compose up -d traumst-api || exit 111
+          if [ $(docker ps -q -f name=api) ]; then
+            docker rename api api_OLD
+          fi
+          if docker-compose up -d traumst-api; then
+            docker stop api_OLD
+            docker rm api_OLD
+          else
+            docker stop api
+            docker rm api
+            docker rename api_OLD api
+            exit 111
+          fi
 
+      # rollback here only rolls back 'web' container
       - name: Pull and Deploy traumst-web
         run: |
           docker-compose pull traumst-web
-          docker-compose up -d traumst-web || exit 222
+          if [ $(docker ps -q -f name=web) ]; then
+            docker rename web web_OLD
+          fi
+          if docker-compose up -d traumst-web; then
+            docker stop web_OLD
+            docker rm web_OLD
+          else
+            docker stop web
+            docker rm web
+            docker rename web_OLD web
+            exit 222
+          fi
 
       - name: Cleanup
         run: docker system prune -a -f
