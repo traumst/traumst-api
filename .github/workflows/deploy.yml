@@ -19,13 +19,13 @@ jobs:
 
       - name: Build and push traumst-api image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/traumst-api:v4 --target api .
-          docker push ${{ secrets.DOCKER_USERNAME }}/traumst-api:v4
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/traumst-api:v5 --target api .
+          docker push ${{ secrets.DOCKER_USERNAME }}/traumst-api:v5
 
       - name: Build and push traumst-website image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/traumst-web:v4 --target web .
-          docker push ${{ secrets.DOCKER_USERNAME }}/traumst-web:v4
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/traumst-web:v5 --target web .
+          docker push ${{ secrets.DOCKER_USERNAME }}/traumst-web:v5
 
   deploy:
     runs-on: [ self-hosted, linux ]
