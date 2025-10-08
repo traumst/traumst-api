@@ -11,7 +11,7 @@ use tokio::{
     io::AsyncWriteExt,
 };
 use crate::{
-    config,
+    config::Config,
     infra,
     api::response,
     api
@@ -27,14 +27,16 @@ impl Server {
         Self{}
     }
 
-    pub async fn init(self) {
+    pub async fn init(self, conf: Config) {
+        //config::load();
         let host = "0.0.0.0";
-        let port = config::listen_on_port();
+        let port = conf.listen_port;
+        //let port = config::listen_on_port();
         let listen_on = format!("{}:{}", host, port);
-        let listener = TcpListener::bind(listen_on.clone())
+        let listener = TcpListener::bind(listen_on)
             .await
             .expect("Listener fail to bind");
-        info!("Server is listening on {listen_on:?}");
+        info!("Server is listening on {port:?}");
 
         tokio::spawn(async move {
             loop {

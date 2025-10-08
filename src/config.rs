@@ -1,4 +1,29 @@
+use log::{
+    info,
+};
 use std::env;
+use std::fs::read_to_string;
+
+
+pub struct Config {
+    pub listen_port: u16,
+    pub smtp_user: String,
+    pub smtp_pass: String,
+    pub owner_email: String,
+}
+
+pub fn load() -> Config {
+    let mut config = Config { listen_port: 7654, smtp_pass: "".to_string(), smtp_user: "".to_string(), owner_email: "".to_string(), };
+    match read_to_string(".env") {
+        Ok(raw_val) => {
+            for line in raw_val.lines() {
+                info!("{}", line);
+            }
+        },
+        Err(e) => panic!("Could not find .env file: {}", e),
+    }
+    return config;
+}
 
 pub fn listen_on_port() -> u16 {
     match env::var("LISTEN_PORT") {

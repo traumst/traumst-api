@@ -11,8 +11,9 @@ use tokio::signal;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn error::Error>> {
+    let conf = config::load();
     server::Server::new().await
-        .init().await;
+        .init(conf).await;
     
     match signal::ctrl_c().await {
         Ok(()) => warn!("Shutdown signal received"),
